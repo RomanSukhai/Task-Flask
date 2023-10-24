@@ -6,7 +6,7 @@
 
     - Встановіть `pyenv` відповідно до [інструкцій для вашої ОС](https://github.com/pyenv/pyenv#installation).
 
-2. **Встановлення Python обраної версії**
+2. **Встановлення Python обраної версії (бажано 3.7.0)**
 
     ```bash
     pyenv install {номер версії відповідно до варіанту}
@@ -15,13 +15,19 @@
 
 3. **Створення та активація віртуального середовища**
 
+    - Для того щоб знати шлях до скачаної версії python 
+
+   ```bash
+    pyenv which python{версія}
+   ```
+
     ```bash
-    python -m venv myenv
+    {шлях до python.exe} -m venv myenv
     source myenv/bin/activate  # на Unix
     .\myenv\Scripts\Activate  # на Windows
     ```
 
-    Додайте `myenv/` до файлу `.gitignore`, щоб уникнути коміту віртуального середовища до репозиторію:
+    - Додайте `myenv/` до файлу `.gitignore`, щоб уникнути коміту віртуального середовища до репозиторію:
 
     ```bash
     echo "myenv/" >> .gitignore
@@ -30,8 +36,6 @@
 4. **Встановлення Flask**
 
     ```bash
-    pip install Flask
-    echo Flask > requirements.txt
     pip install -r requirements.txt
     ```
 
@@ -68,7 +72,6 @@
     Для прикладу використаємо `waitress`:
 
     ```bash
-    pip install waitress
     waitress-serve --listen=*:8000 app:app
     ```
 
