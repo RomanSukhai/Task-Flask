@@ -1,7 +1,7 @@
 openapi: 3.0.0
 info:
   title: Simple Online Store API
-  description: This is a simple API for an online store.
+  description: This is a simple API for an online store that ensures products are not oversold.
   version: 1.0.0
 servers:
   - url: http://localhost:5000/api/v1
@@ -9,6 +9,7 @@ paths:
   /products:
     get:
       summary: List all products
+      operationId: listProducts
       responses:
         '200':
           description: A list of products
@@ -18,18 +19,47 @@ paths:
                 type: array
                 items:
                   $ref: '#/components/schemas/Product'
+  /products/{productId}:
+    get:
+      summary: Get a product by ID
+      operationId: getProductById
+      parameters:
+        - name: productId
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '200':
+          description: A single product
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Product'
+        '404':
+          description: Product not found
   /order:
     post:
       summary: Create a new order
+      operationId: createOrder
       requestBody:
         required: true
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/Order'
+              $ref: '#/components/schemas/OrderRequest'
       responses:
         '201':
           description: Order created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Order'
+        '400':
+          description: Invalid order data
+        '409':
+          description: Not enough products in stock
 components:
   schemas:
     Product:
@@ -51,18 +81,41 @@ components:
         quantityInStock:
           type: integer
           format: int32
+    OrderRequest:
+      type: object
+      required:
+        - userId
+        - products
+      properties:
+        userId:
+          type: integer
+          format: int64
+        products:
+          type: array
+          items:
+            type: object
+            required:
+              - productId
+              - quantity
+            properties:
+              productId:
+                type: integer
+                format: int64
+              quantity:
+                type: integer
+                format: int32
     Order:
       type: object
       required:
         - id
-        - user_id
+        - userId
         - date
         - products
       properties:
         id:
           type: integer
           format: int64
-        user_id:
+        userId:
           type: integer
           format: int64
         date:
