@@ -1,0 +1,163 @@
+openapi: 3.0.0
+info:
+  description: Це просте API для інтернет-магазину, яке дозволяє користувачам переглядати
+    товари та робити замовлення.
+  title: API Простого Інтернет-Магазину
+  version: 1.0.0
+servers:
+- description: Сервер розробки
+  url: http://localhost:5000/api
+paths:
+  /products:
+    get:
+      operationId: listProducts
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProductArray'
+          description: Масив товарів
+      summary: Перелік усіх товарів
+      x-accepts: application/json
+    post:
+      operationId: createProduct
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Product'
+        required: true
+      responses:
+        "201":
+          description: Товар створено
+      summary: Створення товару
+      x-contentType: application/json
+      x-accepts: application/json
+  /products/{productId}:
+    delete:
+      operationId: deleteProduct
+      parameters:
+      - explode: false
+        in: path
+        name: productId
+        required: true
+        schema:
+          type: string
+        style: simple
+      responses:
+        "200":
+          description: Товар видалено
+        "404":
+          description: Товар не знайдено
+      summary: Видалення товару
+      x-accepts: application/json
+    get:
+      operationId: getProductById
+      parameters:
+      - explode: false
+        in: path
+        name: productId
+        required: true
+        schema:
+          type: string
+        style: simple
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Product'
+          description: Об'єкт товару
+        "404":
+          description: Товар не знайдено
+      summary: Отримати товар за його ідентифікатором
+      x-accepts: application/json
+    put:
+      operationId: updateProduct
+      parameters:
+      - explode: false
+        in: path
+        name: productId
+        required: true
+        schema:
+          type: string
+        style: simple
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Product'
+        required: true
+      responses:
+        "200":
+          description: Товар оновлено
+        "404":
+          description: Товар не знайдено
+      summary: Оновлення товару
+      x-contentType: application/json
+      x-accepts: application/json
+  /orders:
+    post:
+      operationId: createOrder
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Order'
+        required: true
+      responses:
+        "201":
+          description: Замовлення створено
+        "400":
+          description: Недійсне замовлення
+      summary: Створення замовлення
+      x-contentType: application/json
+      x-accepts: application/json
+components:
+  schemas:
+    Product:
+      example:
+        price: 0.8008281904610115
+        name: name
+        id: id
+        stock: 6
+      properties:
+        id:
+          description: Унікальний ідентифікатор товару
+          type: string
+        name:
+          description: Назва товару
+          type: string
+        price:
+          description: Ціна товару
+          type: number
+        stock:
+          description: Кількість товару на складі
+          type: integer
+      required:
+      - id
+      - name
+      - price
+      - stock
+      type: object
+    ProductArray:
+      items:
+        $ref: '#/components/schemas/Product'
+      type: array
+    Order:
+      example:
+        quantity: 0
+        productId: productId
+      properties:
+        productId:
+          description: Унікальний ідентифікатор товару
+          type: string
+        quantity:
+          description: Кількість товару в замовленні
+          type: integer
+      required:
+      - productId
+      - quantity
+      type: object
+

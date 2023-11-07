@@ -1,42 +1,61 @@
-from flask import Flask, jsonify
-from flasgger import Swagger, swag_from
+from flask import Flask, jsonify, request, abort
 
 app = Flask(__name__)
-swagger = Swagger(app)
 
-VARIANT_NUMBER = 20
+# Припустимо, що у нас є певний набір продуктів в пам'яті для прикладу
+products = [
+    {"id": "1", "name": "Product 1", "price": 10.0, "stock": 100},
+    # Додати інші продукти за потреби
+]
 
-@app.route(f"/api/v1/hello-world-{VARIANT_NUMBER}")
-def hello_world():
-    """
-    Hello World endpoint
-    ---
-    responses:
-      200:
-        description: A simple hello world
-    """
-    return jsonify(message=f"Hello World {VARIANT_NUMBER}"), 200
-
-@app.route('/products', methods=['GET'])
-@swag_from('ymls/products.yml')
+@app.route('/api/products', methods=['GET'])
 def get_products():
-    products = [
-        {"id": 1, "name": "Product 1", "price": 10.0},
-        {"id": 2, "name": "Product 2", "price": 20.0},
-
-    ]
     return jsonify(products)
 
-@app.route('/api/order', methods=['POST'])
-@swag_from('ymls/create_order.yml')
+@app.route('/api/products', methods=['POST'])
+def create_product():
+    if not request.json or not 'name' in request.json:
+        abort(400)
+    product = {
+        'id': products[-1]['id'] + 1,
+        'name': request.json['name'],
+        'price': request.json.get('price', 0),
+        'stock': request.json.get('stock', 0)
+    }
+    products.append(product)
+    return jsonify(product), 201
+
+@app.route('/api/products/<string:product_id>', methods=['GET'])
+def get_product(product_id):
+    product = next((prod for prod in products if prod['id'] == product_id), None)
+    if product is None:
+        abort(404)
+    return jsonify(product)
+
+@app.route('/api/products/<string:product_id>', methods=['PUT'])
+def update_product(product_id):
+    product = next((prod for prod in products if prod['id'] == product_id), None)
+    if product is None:
+        abort(404)
+    if not request.json:
+        abort(400)
+    product['name'] = request.json.get('name', product['name'])
+    product['price'] = request.json.get('price', product['price'])
+    product['stock'] = request.json.get('stock', product['stock'])
+    return jsonify(product)
+
+@app.route('/api/products/<string:product_id>', methods=['DELETE'])
+def delete_product(product_id):
+    global products
+    products = [prod for prod in products if prod['id'] != product_id]
+    return jsonify({'result': True})
+
+@app.route('/api/orders', methods=['POST'])
 def create_order():
-     return jsonify(order_id=123), 201
+    if not request.json or not 'productId' in request.json:
+        abort(400)
+    # Тут має бути логіка для створення замовлення
+    return jsonify({'result': 'Order placed'}), 201
 
-
-@app.route('/order/<int:order_id>', methods=['DELETE'])
-@swag_from('ymls/delete_order.yml')
-def delete_order(order_id):
-    return jsonify(message="Order deleted."), 200
-
-if __name__ == "__main__":
-    app.run()
+if __name__ == '__main__':
+    app.run(debug=True)
